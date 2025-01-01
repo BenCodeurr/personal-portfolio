@@ -1,6 +1,7 @@
 import { XIcon, Linkedin, InstagramIcon, YoutubeIcon } from 'lucide-react'
 import TypeWriter from './components/TypeWriter'
 import Footer from './components/Footer'
+import Navbar from './components/Navbar'
 
 const socialIcons = [
   { Icon: XIcon, href: 'https://x.com/benmukanirwa' },
@@ -12,6 +13,7 @@ const socialIcons = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#000000] flex flex-col">
+      <Navbar />
       {/* Main content */}
       <main className="flex-grow flex items-center justify-center p-8">
         <div className="max-w-6xl w-full flex flex-col items-center text-center">
