@@ -9,45 +9,53 @@ interface TypeWriterProps {
   delayBetweenWords?: number;
 }
 
-const TypeWriter = ({ 
-  words = [], 
-  typingSpeed = 150, 
-  deletingSpeed = 100, 
-  delayBetweenWords = 2000 
+const TypeWriter = ({
+  words = [],
+  typingSpeed = 150,
+  deletingSpeed = 100,
+  delayBetweenWords = 2000
 }: TypeWriterProps) => {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
+  const [text, setText] = useState('');
+  const [wordIndex, setWordIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const currentWord = words[currentWordIndex];
+    if (!words.length) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const type = () => {
+      const currentWord = words[wordIndex];
       
       if (isDeleting) {
-        // Deleting text
-        if (currentText === '') {
-          setIsDeleting(false);
-          setCurrentWordIndex((prev) => (prev + 1) % words.length);
-        } else {
-          setCurrentText(currentText.slice(0, -1));
-        }
+        setText(currentWord.substring(0, text.length - 1));
       } else {
-        // Typing text
-        if (currentText === currentWord) {
-          // Word is complete, wait before deleting
-          setTimeout(() => setIsDeleting(true), delayBetweenWords);
-        } else {
-          setCurrentText(currentWord.slice(0, currentText.length + 1));
-        }
+        setText(currentWord.substring(0, text.length + 1));
       }
-    }, isDeleting ? deletingSpeed : typingSpeed);
 
-    return () => clearTimeout(timeoutId);
-  }, [currentText, currentWordIndex, isDeleting, words, typingSpeed, deletingSpeed, delayBetweenWords]);
+      let delay = isDeleting ? deletingSpeed : typingSpeed;
+
+      if (!isDeleting && text === currentWord) {
+        delay = delayBetweenWords;
+        setIsDeleting(true);
+      } else if (isDeleting && text === '') {
+        setIsDeleting(false);
+        setWordIndex((prev) => (prev + 1) % words.length);
+      }
+
+      timeoutId = setTimeout(type, delay);
+    };
+
+    timeoutId = setTimeout(type, typingSpeed);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [text, wordIndex, isDeleting, words, typingSpeed, deletingSpeed, delayBetweenWords]);
 
   return (
     <span className="inline-block min-w-[20ch]">
-      {currentText}
+      {text}
       <span className="animate-pulse">|</span>
     </span>
   );

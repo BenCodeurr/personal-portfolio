@@ -8,6 +8,11 @@
   --background-end-rgb: 26, 46, 43;
 }
 
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
