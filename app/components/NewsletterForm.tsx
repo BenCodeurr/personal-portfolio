@@ -5,17 +5,47 @@ import { Send } from 'lucide-react';
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<'idle' | 'subscribing' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('subscribing');
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setStatus('success');
-    setEmail('');
-    
-    setTimeout(() => setStatus(''), 3000);
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      console.log('API Response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
+      setStatus('success');
+      setMessage(data.message);
+      setEmail('');
+      setTimeout(() => {
+        setStatus('idle');
+        setMessage('');
+      }, 3000);
+    } catch (error) {
+      setStatus('error');
+      setMessage(
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      );
+      setTimeout(() => {
+        setStatus('idle');
+        setMessage('');
+      }, 3000);
+    }
   };
 
   return (
@@ -39,9 +69,9 @@ const NewsletterForm = () => {
             {status === 'subscribing' ? 'Subscribing...' : 'Subscribe'}
           </button>
         </div>
-        {status === 'success' && (
-          <p className="text-green-500 text-sm">
-            Successfully subscribed to the newsletter!
+        {message && (
+          <p className={`text-sm ${status === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+            {message}
           </p>
         )}
       </form>
